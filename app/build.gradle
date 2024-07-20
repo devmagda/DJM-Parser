@@ -12,6 +12,13 @@ dependencies {
 }
 
 application {
-    // Define the main class for the application.
-    mainClass = 'java.dj.djm.app.App'
+    mainClassName = 'java.dj.djm.app.App'
+}
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'java.dj.djm.app.App'
+        )
+    }
 }
