@@ -5,7 +5,3 @@
 plugins {
     id 'java.dj.djm.java-library-conventions'
 }
-
-dependencies {
-    api project(':list')
-}

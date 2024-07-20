@@ -3,19 +3,10 @@
  */
 package java.dj.djm.app;
 
-import java.dj.djm.list.LinkedList;
-
-import static java.dj.djm.utilities.StringUtils.join;
-import static java.dj.djm.utilities.StringUtils.split;
-import static java.dj.djm.app.MessageUtils.getMessage;
-
-import org.apache.commons.text.WordUtils;
+import java.dj.djm.parser.Parser;
 
 public class App {
     public static void main(String[] args) {
-        LinkedList tokens;
-        tokens = split(getMessage());
-        String result = join(tokens);
-        System.out.println(WordUtils.capitalize(result));
+        System.out.println(Parser.parse("World"));
     }
 }
