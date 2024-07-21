@@ -3,10 +3,171 @@
  */
 package de.dj.djm.parser;
 
+import de.dj.djm.parser.api.elements.Element;
+import de.dj.djm.parser.api.reader.Line;
+import de.dj.djm.parser.impl.attributes.custom.SimpleText;
+import de.dj.djm.parser.impl.elements.DocType;
+import de.dj.djm.parser.impl.elements.ElementGenerator;
+import de.dj.djm.parser.impl.elements.InlineText;
+import de.dj.djm.parser.impl.elements.Root;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+
+import static de.dj.djm.parser.libs.CharPool.*;
+
 public class Parser {
-    public static final String BEGIN_TAG = "<";
-    public static final String END_TAG = "/>";
-    public static String parse(String input) {
-        return "Hello, " + input;
+    private int _pointerRow;
+    private int _pointerCol;
+
+    private String _currentCharGroup;
+    private int _last;
+    private List<Element> _parsingResults;
+    private List<Line> _parsingLineResults;
+    private Element _currentElement;
+    private boolean _doctypeFound;
+    private String _lastElementName;
+    private Element _parent;
+
+    public Parser() {
+        _pointerRow = 1;
+        _pointerCol = 0;
+        _currentCharGroup = "";
+        _last = -1;
+        _parsingResults = new ArrayList<>();
+        _parsingLineResults = new ArrayList<>();
+        _currentElement = null;
+        _doctypeFound = false;
+        _parent = new Root();
+    }
+
+    public Element parse(File file) throws IOException, ParserConfigurationException, SAXException {
+        return parse(new FileInputStream(file));
+    }
+
+    public Element parse(String input) throws ParserConfigurationException, IOException, SAXException {
+        String cleanedInput = clean(input);
+        for(String rowString : cleanedInput.split((char)SEPERATOR + "")) {
+            _parsingLineResults.add(new Line(rowString));
+        }
+
+        return _parse();
+    }
+
+    private Element _parse() {
+        for(Line line : _parsingLineResults) {
+            switch(line.classify()) {
+                case docType -> _addDocType(line);
+                case parentStart -> _childOpen(line);
+                case parentEnd -> _childClose(line);
+                case selfClosing -> _addChild(line);
+                case inner -> _addSimpleChild(line);
+            }
+        }
+        return _parent;
+    }
+
+    private void _addSimpleChild(Line line) {
+        _parent.addChild(new InlineText(line.getLine()));
+    }
+
+    private void _addChild(Line line) {
+        _parent.addChild(ElementGenerator.getElementFromString(line.getLine()));
+    }
+
+    private void _childClose(Line line) {
+        if(_parent != null) {
+            _parent = _parent.getParent();
+        }
+    }
+
+    private void _childOpen(Line line) {
+        Element newChild = ElementGenerator.getElementFromString(line.getLine());
+        newChild.readAttributes(line.getLine());
+        if(_parent == null) {
+            _parsingResults.add(newChild);
+            _parent = newChild;
+        } else {
+            newChild.setParentFinal(_parent);
+            _parent.addChild(newChild);
+            _parent = newChild;
+        }
+    }
+
+    private void _addDocType(Line line) {
+        if(_doctypeFound) {
+            throw new RuntimeException("DOCTYPE tag was found multiple times: " + line.toString());
+        }
+        _parent.addChild(new DocType(line.getLine()));
+    }
+
+    private String clean(String input) {
+
+        // Replaces every new line with a comma
+        String newLine = _getNewLine(input);
+
+        // Replace all new lines with the line separator
+        input = input.replace(newLine, "" + SEPERATOR);
+
+        // Replace all multiple whitespace characters with a single
+        input = input.replaceAll("\\s{2,}", " ");
+
+        // Cleaning up some wierd empty spaces around the comma's
+        input = input.replace((char)SEPERATOR + " ", ",");
+        input = input.replace(" " + (char)SEPERATOR, ",");
+
+        return input;
+    }
+
+    private String _getNewLine(String input) {
+        String rnLine = NEW_LINE_R + "" + NEW_LINE;
+        String nLine = "" + NEW_LINE;
+        if(input.contains(rnLine)) {
+            return rnLine;
+        } else if(input.contains(nLine)) {
+            return nLine;
+        }
+        throw new RuntimeException("Wierd format found. I suggest you format your djm file using an xml online formatter! ;)");
+    }
+
+    public Element parse(InputStream inputStream) throws ParserConfigurationException, IOException, SAXException {
+        int data = inputStream.read();
+        String xmlString = "";
+        while (data != -1) {
+            xmlString += (char) data;
+            data = inputStream.read();
+        }
+        return parse(xmlString);
+    }
+
+    private String getPointerInfo() {
+        String info = "\nPossible error in .djm file at:\n" +
+                "Row:    " + _pointerRow + "\n" +
+                "Column: " + _pointerCol + "\n" +
+                "Current char group: " + _currentCharGroup + "\n" +
+                "Current char: " + (char)_last + "(" + _last + ")";
+        return info;
+    }
+
+    private ParsingResult categorize(Line line) {
+            if(line.isDocType()) {
+                if(_doctypeFound) {
+                    throw new RuntimeException("Cannot have multiple DOCTYPE declarations: " + line);
+                } else {
+
+                }
+            }
+            return null;
+        }
+
+    public enum ParsingResult {
+        docType,
+        selfClosing,
+        parentOpening,
+        parentStart, parentEnd, inner, parentClosing
+
     }
 }

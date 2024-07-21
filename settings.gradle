@@ -8,4 +8,4 @@
  */
 
 rootProject.name = 'djm-info'
-include('app', 'parser')
+include('app', 'parser', 'utils')
