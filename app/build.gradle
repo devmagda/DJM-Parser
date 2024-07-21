@@ -3,21 +3,22 @@
  */
 
 plugins {
-    id 'java.dj.djm.java-application-conventions'
+    id 'de.dj.djm.java-application-conventions'
 }
 
 dependencies {
     implementation project(':parser')
+    implementation project(':utils')
 }
 
 application {
-    mainClassName = 'java.dj.djm.app.App'
+    mainClassName = 'de.dj.djm.app.App'
 }
 
 jar {
     manifest {
         attributes(
-                'Main-Class': 'java.dj.djm.app.App'
+                'Main-Class': 'de.dj.djm.app.App'
         )
     }
 }

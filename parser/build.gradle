@@ -3,5 +3,10 @@
  */
 
 plugins {
-    id 'java.dj.djm.java-library-conventions'
+    id 'de.dj.djm.java-library-conventions'
 }
+
+dependencies {
+    implementation project(':utils')
+}
+
