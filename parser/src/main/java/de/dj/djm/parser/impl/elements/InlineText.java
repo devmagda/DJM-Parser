@@ -4,7 +4,7 @@ import de.dj.djm.parser.api.elements.ElementBase;
 
 import static de.dj.djm.parser.api.elements.Elements.COLOR;
 
-public class InlineText extends ElementBase<InlineText> {
+public class InlineText extends ElementBase {
     private final String _text;
 
     public InlineText(String text) {

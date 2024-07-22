@@ -7,7 +7,7 @@ import org.w3c.dom.Document;
 import static de.dj.djm.parser.api.elements.Elements.COLOR;
 import static de.dj.djm.parser.api.elements.Elements.COLORS_LIST;
 
-public class Color extends ElementBase<Color> {
+public class Color extends ElementBase {
     public Color() {
         super(COLOR);
     }

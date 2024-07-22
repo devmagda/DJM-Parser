@@ -3,6 +3,7 @@
  */
 package de.dj.djm.parser;
 
+import de.dj.djm.parser.api.attributes.Attribute;
 import de.dj.djm.parser.api.elements.Element;
 import de.dj.djm.parser.api.reader.Line;
 import de.dj.djm.parser.impl.attributes.custom.SimpleText;
@@ -15,7 +16,9 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static de.dj.djm.parser.libs.CharPool.*;
 
@@ -31,6 +34,8 @@ public class Parser {
     private boolean _doctypeFound;
     private String _lastElementName;
     private Element _parent;
+    private final Set<Element> _elements;
+    private final Set<Attribute> _attributes;
 
     public Parser() {
         _pointerRow = 1;
@@ -42,6 +47,8 @@ public class Parser {
         _currentElement = null;
         _doctypeFound = false;
         _parent = new Root();
+        _elements = new HashSet<>();
+        _attributes = new HashSet<>();
     }
 
     public Element parse(File file) throws IOException, ParserConfigurationException, SAXException {
@@ -75,7 +82,11 @@ public class Parser {
     }
 
     private void _addChild(Line line) {
-        _parent.addChild(ElementGenerator.getElementFromString(line.getLine()));
+        Element child = ElementGenerator.getElementFromString(line.getLine());
+        child.readAttributes(line.getLine());
+        _attributes.addAll(child.getAttributes());
+        _elements.add(child);
+        _parent.addChild(child);
     }
 
     private void _childClose(Line line) {
@@ -87,14 +98,15 @@ public class Parser {
     private void _childOpen(Line line) {
         Element newChild = ElementGenerator.getElementFromString(line.getLine());
         newChild.readAttributes(line.getLine());
+        _attributes.addAll(newChild.getAttributes());
         if(_parent == null) {
             _parsingResults.add(newChild);
-            _parent = newChild;
         } else {
             newChild.setParentFinal(_parent);
             _parent.addChild(newChild);
-            _parent = newChild;
         }
+        _elements.add(newChild);
+        _parent = newChild;
     }
 
     private void _addDocType(Line line) {
@@ -102,6 +114,14 @@ public class Parser {
             throw new RuntimeException("DOCTYPE tag was found multiple times: " + line.toString());
         }
         _parent.addChild(new DocType(line.getLine()));
+    }
+
+    public Set<Element> getElements() {
+        return _elements;
+    }
+
+    public Set<Attribute> getAttributes() {
+        return _attributes;
     }
 
     private String clean(String input) {

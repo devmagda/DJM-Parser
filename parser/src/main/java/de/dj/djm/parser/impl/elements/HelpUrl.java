@@ -9,7 +9,7 @@ import java.util.List;
 
 import static de.dj.djm.parser.api.elements.Elements.HELP_URL;
 
-public class HelpUrl extends ElementBase<HelpUrl> {
+public class HelpUrl extends ElementBase {
     public HelpUrl() {
         super(HELP_URL);
     }

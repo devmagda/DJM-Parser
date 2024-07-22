@@ -11,7 +11,7 @@ import java.util.List;
 
 import static de.dj.djm.parser.api.elements.Elements.MIDI;
 
-public class Midi extends ElementBase<Midi> {
+public class Midi extends ElementBase {
 
     public Midi() {
         super(MIDI);
