@@ -21,8 +21,7 @@ public class App {
         Parser djmParser = new Parser();
         Element document = djmParser.parse(classLoader.getResourceAsStream("hercules_420_custom.djm"));
 
-        String text = document.format();
-
+        String text = document.getText();
         System.out.println(text);
     }
 }

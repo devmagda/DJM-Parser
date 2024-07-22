@@ -4,6 +4,7 @@ import de.dj.djm.parser.api.Formattable;
 import de.dj.djm.parser.api.attributes.Attribute;
 import de.dj.djm.parser.api.attributes.AttributeBase;
 import de.dj.djm.parser.impl.attributes.AttributeGenerator;
+import de.dj.djm.utils.impl.generators.IdGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +12,8 @@ import java.util.stream.Collectors;
 
 import static de.dj.djm.parser.libs.StringPool.*;
 
-public abstract class ElementBase<T> implements Element<T>{
+public abstract class ElementBase implements Element {
+    private final int id;
     private final String _elementName;
     private List<Attribute> _attributes;
     private final List<Element> _children;
@@ -21,15 +23,70 @@ public abstract class ElementBase<T> implements Element<T>{
         return _elementName;
     }
 
+    @Override
     public List<Attribute> getAttributes() {
         return _attributes;
     }
 
     public ElementBase(String elementName) {
+        this(elementName, null);
+    }
+
+    protected ElementBase(String elementName, List<Attribute> attributes) {
         _elementName = elementName;
         _children = new ArrayList<>();
-        _attributes = new ArrayList<>();
+        _attributes = attributes;
         _parent = null;
+        id = IdGenerator.getInt();
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    protected String getAttributeString() {
+        if(_attributes == null) throw new RuntimeException("Attributes were not initialized: " + _elementName);
+        String attributes = getAttributes()
+                .stream()
+                .map(attribute -> attribute.format())
+                .collect(Collectors.joining(" "));
+        return attributes;
+    }
+
+    @Override
+    public String getOpenTag() {
+        if(isSelfClosing()) {
+            return TAG_OPEN + getElementName() + " " + getAttributeString() + TAG_CLOSE_END + "\n";
+        } else {
+            return TAG_OPEN + getElementName() + " " + getAttributeString() + TAG_CLOSE_SINGLE + "\n";
+        }
+    }
+
+    @Override
+    public String getSubElements() {
+        if(isSelfClosing()) {
+            return "";
+        } else {
+            return _children.stream().map(child -> child.getText()).collect(Collectors.joining());
+        }
+    }
+
+    @Override
+    public String getCloseTag() {
+        if(isSelfClosing()) {
+            return "";
+        } else {
+            return TAG_CLOSE_START + getElementName() + TAG_CLOSE_SINGLE + "\n";
+        }
+    }
+
+    @Override
+    public String getText() {
+        String text = "";
+        text += getOpenTag();
+        text += getSubElements();
+        text += getCloseTag();
+        return text;
     }
 
     @Override
@@ -52,17 +109,13 @@ public abstract class ElementBase<T> implements Element<T>{
     }
 
     @Override
-    public boolean isLeaf() {
-        return _children.isEmpty();
-    }
-
-    @Override
     public void addChild(Element element) {
         _children.add(element);
     }
 
     @Override
     public void addAttribute(Attribute entry) {
+        if(_attributes == null) throw new RuntimeException("Attributes were not initialized: " + _elementName);
         _attributes.add(entry);
     }
 
@@ -72,9 +125,9 @@ public abstract class ElementBase<T> implements Element<T>{
 
         if(!"".equals(cleanedElementString)) {
             for(String singleAttribute : cleanedElementString.split("\" ")) {
-                String repaired = (singleAttribute + "\"").trim(); // Because we had to split around "
-
-                attributes.add(AttributeGenerator.getAttributeFromString(repaired));
+                String repaired = singleAttribute.endsWith("\"") ? singleAttribute : singleAttribute + "\"";
+                Attribute attribute = AttributeGenerator.getAttributeFromString(repaired);
+                attributes.add(attribute);
             }
         }
         return attributes;
@@ -102,11 +155,11 @@ public abstract class ElementBase<T> implements Element<T>{
                 .stream()
                 .map(attribute -> attribute.format())
                 .collect(Collectors.joining(" ", " ", " "));
-        if(isLeaf() && isSelfClosing()) {
+        if(isSelfClosing()) {
             return TAG_OPEN + getElementName() + attributes + TAG_CLOSE_END + "\n";
         }
 
-        if(!isSelfClosing() && !isLeaf()) {
+        if(!isSelfClosing()) {
             String open = TAG_OPEN + getElementName() + attributes + TAG_CLOSE_SINGLE + "\n";
             String close = TAG_CLOSE_START + getElementName() + TAG_CLOSE_SINGLE;
 

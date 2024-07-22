@@ -5,7 +5,7 @@ import de.dj.djm.parser.api.elements.ElementBase;
 import static de.dj.djm.parser.api.elements.Elements.HELP_URL;
 import static de.dj.djm.parser.api.elements.Elements.SOUNDCARD;
 
-public class Soundcard extends ElementBase<Soundcard> {
+public class Soundcard extends ElementBase {
     public Soundcard() {
         super(SOUNDCARD);
     }

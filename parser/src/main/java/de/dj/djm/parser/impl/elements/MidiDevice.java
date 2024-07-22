@@ -5,7 +5,7 @@ import de.dj.djm.parser.api.elements.ElementBase;
 import static de.dj.djm.parser.api.elements.Elements.MIDI;
 import static de.dj.djm.parser.api.elements.Elements.MIDI_DEVICE;
 
-public class MidiDevice extends ElementBase<MidiDevice> {
+public class MidiDevice extends ElementBase {
 
     public MidiDevice() {
         super(MIDI_DEVICE);

@@ -4,11 +4,13 @@ import de.dj.djm.parser.api.Formattable;
 
 import java.util.HexFormat;
 
+import static de.dj.djm.parser.libs.CharPool.DASH;
+import static de.dj.djm.parser.libs.CharPool.SLASH;
+
 public class Number implements Formattable {
     private final int _number;
     public Number(int number) {
-        if(number < 0) throw new IllegalArgumentException("Number must be positive. Was: " + number + "!");
-        if(number > 255) throw new IllegalArgumentException("Number must be lower than 255. Was: " + number + "!");
+        if(number < -1) throw new IllegalArgumentException("Number must be positive. Was: " + number + "!");
         this._number = number;
     }
 
@@ -17,7 +19,21 @@ public class Number implements Formattable {
     }
 
     public static Number fromHex(String s) {
-        return new Number(HexFormat.fromHexDigits(s));
+        try {
+            int i = HexFormat.fromHexDigits(s);
+            return new Number(i);
+        } catch(Exception e) {
+            if(s.contains(""+ DASH)) {
+                return new Number(0) {
+                    @Override
+                    public String format() {
+                        return s;
+                    }
+                };
+            } else {
+                throw new RuntimeException("The following hex value could not be parsed: " + s, e);
+            }
+        }
     }
 
     public String getHex() {

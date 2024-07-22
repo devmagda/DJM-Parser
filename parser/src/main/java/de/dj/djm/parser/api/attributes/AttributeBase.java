@@ -1,17 +1,24 @@
 package de.dj.djm.parser.api.attributes;
 
 import de.dj.djm.parser.api.Formattable;
+import de.dj.djm.utils.impl.generators.IdGenerator;
 
 import static de.dj.djm.parser.libs.StringLibs.concatEqu;
 import static de.dj.djm.parser.libs.StringLibs.enquote;
 
 public abstract class AttributeBase<T extends Formattable> implements Attribute<Formattable>, Formattable {
-    private final String attributeName;
+    private final int id;
+    private final String _attributeName;
     private T _attributeValue;
 
     public AttributeBase(String attributeName, T attributeValue) {
-        this.attributeName = attributeName;
-        this._attributeValue = attributeValue;
+        _attributeName = attributeName;
+        _attributeValue = attributeValue;
+        id = IdGenerator.getInt();
+    }
+
+    public int getId() {
+        return id;
     }
 
     public AttributeBase(String attributeName) {
@@ -19,7 +26,7 @@ public abstract class AttributeBase<T extends Formattable> implements Attribute<
     }
 
     public String getAttributeName() {
-        return attributeName;
+        return _attributeName;
     }
 
     public T getAttributeValue() {

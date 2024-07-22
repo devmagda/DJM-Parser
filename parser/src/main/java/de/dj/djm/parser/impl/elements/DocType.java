@@ -5,7 +5,7 @@ import de.dj.djm.parser.api.elements.ElementBase;
 import static de.dj.djm.parser.api.elements.Elements.COLOR;
 import static de.dj.djm.parser.libs.StringPool.DOC_TYPE;
 
-public class DocType extends ElementBase<DocType> {
+public class DocType extends ElementBase {
     private final String _text;
 
     public DocType(String text) {

@@ -4,15 +4,12 @@ import de.dj.djm.parser.impl.attributes.custom.classes.Text;
 
 import static de.dj.djm.parser.libs.StringPool.*;
 
-public abstract class TextInlineElement extends ElementBase<Text> {
+public abstract class TextInlineElement extends ElementBase {
     private String _text;
 
     protected TextInlineElement(String elementName) {
         super(elementName);
-    }
-
-    public String getText() {
-        return _text;
+        _text = "";
     }
 
     public void setText(String _text) {
